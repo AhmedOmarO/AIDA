@@ -12,10 +12,11 @@ class AIDA:
     def build_context(
         csv_path: str | Path,
         goal: str,
-        flag_id: str = "custom-csv",
+        flag_id: str | None = None,
         difficulty: str = "custom",
     ) -> DatasetContext:
         path = Path(csv_path).expanduser().resolve()
+        resolved_flag_id = flag_id or path.stem
         try:
             pd = importlib.import_module("pandas")
         except ImportError:
@@ -28,7 +29,7 @@ class AIDA:
         else:
             dataframe = pd.read_csv(path)
         return DatasetContext(
-            flag_id=flag_id,
+            flag_id=resolved_flag_id,
             goal=goal,
             expected_insights=[],
             difficulty=difficulty,
@@ -45,7 +46,7 @@ class AIDA:
         questions_per_round: int,
         with_review: bool,
         verbosity_level: int = 0,
-        flag_id: str = "custom-csv",
+        flag_id: str | None = None,
         difficulty: str = "custom",
     ) -> Any:
         from .agent_loop import run_loop

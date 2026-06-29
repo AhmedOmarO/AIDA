@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Any
-import tqdm
 
 from .smolagents_context import context_to_dict, load_context
 from .smolagents_models import build_model
 from .multistep_insight_agent import run_multistep_insight_agent
 from .multistep_agent import run_reviewer, run_research_question_agent
+from .progress import progress
 from .smolagents_tools import build_tools
 from .smolagents_trace import append_trace_call, init_trace, write_trace_logs
 
@@ -15,6 +15,13 @@ DEFAULT_PROMPTS_PATH = PACKAGE_ROOT / "agent_prompts.json"
 
 
 OUTPUTS_PATH = PUBLIC_ROOT / "smolagents_ssot_loop_outputs.json"
+
+
+def build_progress_label(context: Any) -> str:
+    dataset_name = Path(str(context.dataset_path)).stem.replace("_", " ").replace("-", " ").strip()
+    if dataset_name:
+        return f"Analyzing {dataset_name}"
+    return "Analyzing CSV"
 
 
 def run_loop(
@@ -44,9 +51,9 @@ def run_loop(
     last_review_payload: list[dict[str, Any]] = []
     # good_insight_example = random.choice(context.expected_insights) if context.expected_insights else ""
 
-    round_iterator = tqdm.tqdm(
+    round_iterator = progress(
         range(1, rounds + 1),
-        desc=f"{context.flag_id} rounds",
+        desc=build_progress_label(context),
         leave=False,
     )
     for round_index in round_iterator:
@@ -142,7 +149,7 @@ def run_loop(
 def run_flag(
     flag_id: str = "flag-1",
     ssot_path: Path | str | None = None,
-    model_name: str = "models/gemini-flash-lite-latest",
+    model_name: str = "gemini/gemini-flash-lite-latest",
     rounds: int = 2,
     questions_per_round: int = 4,
     log_dir: Path | str | None = "logs",

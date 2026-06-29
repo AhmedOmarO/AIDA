@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
-import tqdm
 
 # ---------------------------------------------------------------------
 # Project imports
@@ -11,6 +10,7 @@ import tqdm
 # This assumes you already have these helpers in your project,
 # as in your original code.
 from .smolagents_models import build_model
+from .progress import progress
 from .smolagents_utils import parse_json_output, require_module
 
 
@@ -606,7 +606,7 @@ def run_reviewer(
     memory = list(seen_insights or [])
     reviews: list[dict[str, Any]] = []
 
-    for insight in tqdm.tqdm(normalized_insights, desc="Reviewing insights"):
+    for insight in progress(normalized_insights, desc="Reviewing insights"):
         redundancy_tool = NoveltyAssessmentTool()
         impact_tool = AssessBusinessImpactTool()
         actionability_tool = AssessActionabilityTool()
@@ -705,7 +705,7 @@ def run_research_question_agent(
         except Exception:
             pass
 
-    for review in tqdm.tqdm(payload, desc="Generating research questions"):
+    for review in progress(payload, desc="Generating research questions"):
         research_tool = SubmitResearchQuestionsTool()
         prioritize_tool = PrioritizeResearchQuestionsTool()
 
