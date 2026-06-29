@@ -1,0 +1,196 @@
+
+{
+  "tools": [
+    {
+      "class_name": "NoveltyAssessmentTool",
+      "name": "assess_novelty",
+      "description": "Assess whether the current insight or evidence adds new information beyond the user's current knowledge baseline, estimated from previously seen insights. Novelty should reflect new specificity, stronger evidence, a new segment, a new comparison, a new time period, an exception, a stronger business interpretation, or a more actionable framing.",
+      "output_type": "object",
+      "inputs": {
+        "insight": {
+          "type": "string",
+          "description": "The current insight or evidence text being assessed."
+        },
+        "user_knowledge_baseline": {
+          "type": "array",
+          "description": "Short, concise evidence-like statements summarizing what the user already knows from previously seen insights. These should be inferred only from seen insights, not from hidden SSOT. Keep each item brief, e.g. 'Speeding does not explain high fatal collision rates' or 'Insurance premiums are weak proxies for road fatality risk'.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adds_new_information": {
+          "type": "boolean",
+          "description": "Whether the current insight or evidence adds any new meaningful information beyond the user_knowledge_baseline. New information can include a new segment, metric, comparison group, direction of effect, time period, causal explanation, supporting evidence, exception, extreme case, distributional fact, or more specific interpretation."
+        },
+        "novelty_score": {
+          "type": "integer",
+          "description": "Score from 0 to 100. Novelty means the insight adds new, meaningful, evidence-backed information beyond the user_knowledge_baseline. Give higher scores when the insight adds a new segment, metric, comparison group, direction of effect, time period, causal explanation, supporting evidence, extreme case, distributional fact, or specific business interpretation. Do not penalize an insight simply because it is related to something the user already knows. Data gaps, monitoring gaps, missing instrumentation, inability to diagnose, lack of visibility, or calls for better tracking are operationally useful but not high-novelty business insights; cap them at 40 unless they reveal a specific surprising business behavior. Cap at 30 if the insight mainly says more data is needed."
+        },
+        "new_information_added": {
+          "type": "string",
+          "description": "Briefly state what new information the current insight adds beyond the user_knowledge_baseline. Examples: new segment, new comparison, new direction, new metric, new evidence, new time period, new extreme case, new distributional fact, or new explanation. If no new information is added, write an empty string."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Short explanation of the novelty assessment. Explicitly compare the current insight against the user_knowledge_baseline and explain what new information, specificity, evidence, framing, or interpretation it adds. If the insight is mainly a data gap or monitoring gap, explicitly say it is operationally useful but not a novel business insight."
+        }
+      }
+    },
+    {
+      "class_name": "AssessBusinessImpactTool",
+      "name": "assess_business_impact",
+      "description": "Assess the business impact of the current insight.",
+      "output_type": "object",
+      "inputs": {
+        "insight": {
+          "type": "string",
+          "description": "The current insight text."
+        },
+        "importance": {
+          "type": "integer",
+          "description": "Importance to the goal from 1 to 10."
+        },
+        "importance_rationale": {
+          "type": "string",
+          "description": "Short explanation of business impact."
+        }
+      }
+    },
+    {
+      "class_name": "AssessActionabilityTool",
+      "name": "assess_actionability",
+      "description": "Assess whether the insight can lead to a concrete action.",
+      "output_type": "object",
+      "inputs": {
+        "insight": {
+          "type": "string",
+          "description": "The current insight text."
+        },
+        "actionability": {
+          "type": "integer",
+          "description": "Score from 1 to 10. Actionability means the insight supports a concrete, specific, near-term action. Penalize broad, vague, cross-functional, high-dependency, or multi-quarter actions. If actions require major process redesign, multiple teams, unclear ownership, further diagnosis, or systemic fixes, actionability should be below 6. Only score above 8 when the action is specific, directly supported by the insight, has a clear owner, can start immediately, and does not require further analysis."
+        },
+        "recommended_actions": {
+          "type": "array",
+          "description": "A list of 2 to 3 direct business actions based only on the current insight. Actions must be operational interventions, not further analysis. Do not include: analysis, investigation, interviews, root-cause analysis, data collection, monitoring, validation, research, or dashboard review. Each action must change a process, policy, product behavior, staffing plan, customer communication, prioritization, or support workflow. If no direct action is possible, return an empty list.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Short explanation of actionability."
+        }
+      }
+    },
+    {
+      "class_name": "SubmitFinalReviewTool",
+      "name": "submit_final_review",
+      "description": "Submit the final structured review after all previous review steps.",
+      "output_type": "object",
+      "inputs": {
+        "insight": {
+          "type": "string",
+          "description": "The insight text."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Evidence supporting the insight."
+        },
+        "importance": {
+          "type": "integer",
+          "description": "Importance to the goal from 1 to 10."
+        },
+        "importance_rationale": {
+          "type": "string",
+          "description": "Short explanation of the importance score."
+        },
+        "actionability": {
+          "type": "integer",
+          "description": "Actionability score from 1 to 10."
+        },
+        "recommended_actions": {
+          "type": "array",
+          "description": "A list of 2 to 3 practical actions based on the insight.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interestingness": {
+          "type": "integer",
+          "description": "Interestingness score from 1 to 10."
+        },
+        "interestingness_rationale": {
+          "type": "string",
+          "description": "Short explanation of the interestingness score."
+        },
+        "relevance_flag": {
+          "type": "string",
+          "description": "Either \"relevant\" or \"not_relevant\"."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Final short explanation."
+        },
+        "user_knowledge_baseline": {
+          "type": "array",
+          "description": "Short, concise evidence-like statements summarizing what the user already knows from previously seen insights. These should be inferred only from seen insights, not from hidden SSOT. Keep each item brief, e.g. 'Speeding does not explain high fatal collision rates' or 'Insurance premiums are weak proxies for road fatality risk'.",
+          "items": {
+            "type": "string"
+          }
+        }
+
+      }
+    },
+    {
+      "class_name": "SubmitResearchQuestionsTool",
+      "name": "submit_research_questions",
+      "description": "Submit follow-up research questions for an important or interesting insight.",
+      "output_type": "object",
+      "inputs": {
+        "insight": {
+          "type": "string",
+          "description": "The reviewed insight text."
+        },
+        "importance": {
+          "type": "integer",
+          "description": "Importance to the goal from 1 to 10."
+        },
+        "interestingness": {
+          "type": "integer",
+          "description": "Interestingness score from 1 to 10."
+        },
+        "priority_reason": {
+          "type": "string",
+          "description": "Why this insight deserves follow-up research now."
+        },
+        "research_questions": {
+          "type": "array",
+          "description": "A list of 2 to 4 research questions that could make the insight more actionable.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "class_name": "PrioritizeResearchQuestionsTool",
+      "name": "prioritize_research_questions",
+      "description": "Rank the current research question pool and compact it to the top 3 highest-priority questions.",
+      "output_type": "object",
+      "inputs": {
+        "prioritized_questions": {
+          "type": "array",
+          "description": "The top 3 highest-priority research questions after merging the previous prioritized list with the new batch.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "priority_rationale": {
+          "type": "string",
+          "description": "Short explanation of why these questions were kept as the top 3."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aida-public"
+version = "0.1.0"
+description = "Public AIDA interface for CSV-based insight generation."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "litellm>=1.51.0",
+  "pandas>=2.2.2",
+  "smolagents>=1.9.2",
+  "tqdm>=4.66.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
