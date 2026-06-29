@@ -1,43 +1,43 @@
-# Public AIDA
+# AIDA
 
-Public AIDA is the cleaned user-facing package in this monorepo. It exposes the `AIDA` interface for running insight generation on a CSV with an LLM-backed analyst loop.
+AIDA is a Python package for finding decision-useful insights in a CSV with an LLM-driven analyst loop.
 
-## Layout
+## What You Need To Do
 
-- `src/aida/`: package code
-- `notebooks/minimal_aida_usage.ipynb`: minimal usage walkthrough
+### 1. Install AIDA
 
-## Install
-
-From the repo root:
+If you are in this monorepo:
 
 ```bash
 pip install -e ./public
 ```
 
-If you are running the notebook before installing the package, the notebook adds `public/src` to `sys.path` so `from aida import AIDA` still works.
-
-## Environment variables
-
-Set the API key for the provider you want to use:
+If you are in the standalone `AIDA` repo:
 
 ```bash
-export OPENAI_API_KEY=your_key
+pip install -e .
 ```
 
-or
+This installs the required runtime dependencies:
+
+- `litellm`
+- `pandas`
+- `smolagents`
+- `tqdm`
+
+### 2. Set Your Gemini API Key
 
 ```bash
-export GEMINI_API_KEY=your_key
+export GEMINI_API_KEY=your_key_here
 ```
 
-or
+The simplest default model for this package is:
 
-```bash
-export DEEPSEEK_API_KEY=your_key
+```text
+gemini/gemini-flash-lite-latest
 ```
 
-## Minimal example
+### 3. Run AIDA On Your CSV
 
 ```python
 from aida import AIDA
@@ -45,43 +45,65 @@ from aida import AIDA
 result = AIDA.run(
     csv_path="airline-safety.csv",
     goal="Find the most decision-useful patterns in airline safety incidents.",
-    model_name="openai/gpt-4.1-mini",
+    model_name="gemini/gemini-flash-lite-latest",
     rounds=2,
     questions_per_round=3,
-    with_review=False,
+    with_review=True,
 )
 
 print(result["final_relevant_insights"][:2])
 ```
 
-Example dataset download:
+Example CSV:
 
 ```bash
 curl -L https://raw.githubusercontent.com/fivethirtyeight/data/master/airline-safety/airline-safety.csv -o airline-safety.csv
 ```
 
-## Review mode
+## What The Review Agent Does
 
-`with_review=False` returns the generated insights directly from the multi-round loop.
+When `with_review=True`, AIDA runs a second agent after each generation round.
 
-`with_review=True` runs the reviewer agent each round and uses those reviews as the carry-forward context between rounds.
+The review agent does not create the main insights itself. It critiques the current candidate insights, identifies weak spots, lists missing areas to cover, and suggests follow-up questions for the next round. That feedback is then carried into the next iteration so the main analyst agent can improve coverage and relevance.
 
-If you already have candidate insights and only want relevance scoring, use `AIDA.review(...)`.
+Use `with_review=False` if you want the raw generation loop only.
 
-## User CSVs
+If you already have candidate insights and only want the review step, use:
 
-Pass any local CSV path to `csv_path`. The file should be readable by `pandas.read_csv`. Mixed text and numeric columns work best because the agent can inspect both structure and free-text fields.
+```python
+AIDA.review(...)
+```
 
-For FiveThirtyEight examples, download the CSV you want directly from the FiveThirtyEight GitHub repository rather than using vendored data from this repo.
+## Input Expectations
+
+- Pass any local CSV path to `csv_path`.
+- The file should be readable by `pandas.read_csv`.
+- Mixed numeric and text columns work well.
+
+## Repo Layout
+
+- `src/aida/`: package source
+- `tests/`: lightweight package tests
+- `notebooks/minimal_aida_usage.ipynb`: minimal walkthrough
 
 ## Notebook
 
-Open [minimal_aida_usage.ipynb](/Users/ahmed/Aida/public/notebooks/minimal_aida_usage.ipynb) for the smallest runnable example in this repo.
+Open [minimal_aida_usage.ipynb](notebooks/minimal_aida_usage.ipynb) for the smallest runnable example.
 
 ## Tests
 
-Run the lightweight package tests from the repo root:
+From the monorepo root:
 
 ```bash
 PYTHONPATH=public/src python -m unittest discover -s public/tests
 ```
+
+From the standalone repo root:
+
+```bash
+python -m unittest discover -s tests
+```
+
+## License
+
+MIT. See `LICENSE`.
