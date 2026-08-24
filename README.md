@@ -1,43 +1,47 @@
-# AIDA
+# AIDA — AI-Assisted Insight Discovery for Tabular Data
 
-AIDA is a Python package for finding decision-useful insights in a CSV with an LLM-driven analyst loop.
+AIDA is a Python package that turns a CSV and an analytical goal into a ranked set of decision-useful insights. It uses an iterative LLM-driven analyst loop to explore the data, generate evidence-backed findings, critique coverage, and refine the next round of questions.
 
-## What You Need To Do
+The project explores a practical question: **how can an AI analyst surface the most useful findings before a human has to inspect every possible insight?**
 
-### 1. Install AIDA
+## Highlights
 
-If you are in this monorepo:
+- Goal-aware analysis of arbitrary CSV files
+- Iterative question generation and data exploration
+- Optional reviewer agent that critiques findings and identifies missing areas
+- Structured outputs for downstream ranking, reporting, or evaluation
+- Provider-flexible model configuration
+- Installable Python package with tests and a minimal notebook
+
+## How it works
+
+1. A user supplies a CSV file and an analytical goal.
+2. The analyst agent inspects the data and asks targeted questions.
+3. Candidate insights are generated with supporting evidence.
+4. When review is enabled, a second agent critiques coverage and suggests follow-up questions.
+5. Feedback is carried into the next round, improving relevance and breadth.
+
+## Quick start
+
+### Install
 
 ```bash
-pip install -e ./public
-```
-
-If you are in the standalone `AIDA` repo:
-
-```bash
+git clone https://github.com/AhmedOmarO/AIDA.git
+cd AIDA
 pip install -e .
 ```
 
-This installs the required runtime dependencies:
+AIDA requires Python 3.10 or newer.
 
-- `litellm`
-- `pandas`
-- `smolagents`
-- `tqdm`
+### Configure a model
 
-### 2. Set Your Gemini API Key
+Set the API key required by your chosen model provider. For Gemini:
 
 ```bash
 export GEMINI_API_KEY=your_key_here
 ```
 
-The simplest default model for this package is:
-
-```text
-gemini/gemini-flash-lite-latest
-```
-
-### 3. Run AIDA On Your CSV
+### Run an analysis
 
 ```python
 from aida import AIDA
@@ -51,59 +55,51 @@ result = AIDA.run(
     with_review=True,
 )
 
-print(result["final_relevant_insights"][:2])
+for insight in result["final_relevant_insights"][:3]:
+    print(insight)
 ```
 
-Example CSV:
+Download the example dataset:
 
 ```bash
-curl -L https://raw.githubusercontent.com/fivethirtyeight/data/master/airline-safety/airline-safety.csv -o airline-safety.csv
+curl -L https://raw.githubusercontent.com/fivethirtyeight/data/master/airline-safety/airline-safety.csv \
+  -o airline-safety.csv
 ```
 
-## What The Review Agent Does
+## Reviewer agent
 
-When `with_review=True`, AIDA runs a second agent after each generation round.
+With `with_review=True`, AIDA runs a reviewer after every generation round. The reviewer:
 
-The review agent does not create the main insights itself. It critiques the current candidate insights, identifies weak spots, lists missing areas to cover, and suggests follow-up questions for the next round. That feedback is then carried into the next iteration so the main analyst agent can improve coverage and relevance.
+- critiques the current candidate insights;
+- identifies weak or underexplored areas;
+- proposes follow-up questions; and
+- guides the analyst's next iteration.
 
-Use `with_review=False` if you want the raw generation loop only.
+Use `with_review=False` for the raw generation loop, or call `AIDA.review(...)` to review an existing set of candidate insights.
 
-If you already have candidate insights and only want the review step, use:
+## Input and output
 
-```python
-AIDA.review(...)
+AIDA accepts any local CSV readable by `pandas.read_csv`. Mixed numeric and categorical columns are supported. The result is a structured dictionary containing generated findings, review feedback, and the final relevant insights.
+
+## Repository structure
+
+```text
+src/aida/                         Python package
+tests/                            Lightweight tests
+notebooks/minimal_aida_usage.ipynb  Runnable walkthrough
+pyproject.toml                    Package metadata and dependencies
 ```
-
-## Input Expectations
-
-- Pass any local CSV path to `csv_path`.
-- The file should be readable by `pandas.read_csv`.
-- Mixed numeric and text columns work well.
-
-## Repo Layout
-
-- `src/aida/`: package source
-- `tests/`: lightweight package tests
-- `notebooks/minimal_aida_usage.ipynb`: minimal walkthrough
-
-## Notebook
-
-Open [minimal_aida_usage.ipynb](notebooks/minimal_aida_usage.ipynb) for the smallest runnable example.
 
 ## Tests
-
-From the monorepo root:
-
-```bash
-PYTHONPATH=public/src python -m unittest discover -s public/tests
-```
-
-From the standalone repo root:
 
 ```bash
 python -m unittest discover -s tests
 ```
 
+## Project status
+
+AIDA is an experimental research prototype for proactive, context-aware data analysis. Current work focuses on insight quality, ranking, novelty, and evaluation against reference findings.
+
 ## License
 
-MIT. See `LICENSE`.
+MIT — see [LICENSE](LICENSE).
